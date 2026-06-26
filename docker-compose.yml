@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
+      # Add your environment variables below
+      # - GEMINI_API_KEY=your_key_here
+      # - OWNER_EMAIL=your@email.com
+      # - OWNER_WHATSAPP=+1234567890
+      # - BUSINESS_NAME=Your Business
+    volumes:
+      - n8n_data:/home/node/.n8n
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    networks:
+      - n8n-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  n8n-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+
+volumes:
+  n8n_data:
+    driver: local
